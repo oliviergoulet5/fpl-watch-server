@@ -1,10 +1,10 @@
 import dotenv from 'dotenv';
 dotenv.config();
 
-import { __prod__ } from '../constants';
-import { Account } from '../entities/Account';
-import { MikroORM } from '@mikro-orm/core';
+import { __prod__ } from './constants';
+import { Account } from './entities/Account';
 import path from 'path';
+import { MikroORM } from '@mikro-orm/core';
 
 export default {
     migrations: {

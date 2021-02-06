@@ -12,10 +12,18 @@ export class Account {
     @Property({ length: 25, unique: true })
     username!: string;
 
-    @Property()
+    @Property({ type: 'text' })
     password!: string;
 
     @Field()
     @Property({ nullable: true })
     name: string;
+
+    @Field(() => String)
+    @Property({ type: 'date'})
+    createdAt = new Date();
+
+    @Field(() => String)
+    @Property({ type: 'date', onUpdate: () => new Date() })
+    updatedAt = new Date();
 } 

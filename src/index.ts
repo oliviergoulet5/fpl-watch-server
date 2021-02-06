@@ -1,11 +1,14 @@
 import 'reflect-metadata';
-import { MikroORM } from '@mikro-orm/core';
-import microConfig from './config/mikro-orm.config'
+
+import { HelloResolver } from './resolvers/hello';
+import { AccountResolver } from './resolvers/account';
+
 import express from 'express';
 import { ApolloServer } from 'apollo-server-express';
 import { buildSchema } from 'type-graphql';
-import { HelloResolver } from './resolvers/hello';
-import { AccountResolver } from './resolvers/account';
+
+import { MikroORM } from '@mikro-orm/core';
+import microConfig from './mikro-orm.config'
 
 const main = async () => {
     const orm = await MikroORM.init(microConfig);
