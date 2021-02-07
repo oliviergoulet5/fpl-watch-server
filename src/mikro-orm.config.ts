@@ -16,5 +16,5 @@ export default {
     password: process.env.DB_PASS,
     dbName: 'fplwatch',
     type: 'postgresql',
-    debug: !__prod__
+    debug: !__prod__,
 } as Parameters<typeof MikroORM.init>[0];

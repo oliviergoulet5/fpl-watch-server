@@ -10,7 +10,7 @@ class Player {
 
     @Field(() => Int)
     goalsScored: number;
-    
+
     @Field(() => Int)
     assists: number;
 
@@ -25,7 +25,6 @@ class Player {
 
     @Field(() => Float)
     ictIndex: string;
-
 }
 
 export default Player;

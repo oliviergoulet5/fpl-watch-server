@@ -1,6 +1,15 @@
 import { Account } from '../entities/Account';
 import { EntityManagerContext } from '../types';
-import { Resolver, Query, Ctx, Mutation, Field, InputType, Arg, ObjectType } from 'type-graphql';
+import {
+    Resolver,
+    Query,
+    Ctx,
+    Mutation,
+    Field,
+    InputType,
+    Arg,
+    ObjectType,
+} from 'type-graphql';
 import argon2 from 'argon2';
 import FieldError from '../entities/FieldError';
 
@@ -25,15 +34,15 @@ class AccountInput extends LoginInput {
 @ObjectType()
 class AccountResponse {
     @Field(() => [FieldError], { nullable: true })
-    errors?: FieldError[]
+    errors?: FieldError[];
 
     @Field(() => Account, { nullable: true })
-    account?: Account
+    account?: Account;
 }
 
 @Resolver()
 class AccountResolver {
-    @Query(() => [Account]) 
+    @Query(() => [Account])
     accounts(@Ctx() { em }: EntityManagerContext): Promise<Account[]> {
         return em.find(Account, {});
     }
@@ -45,41 +54,47 @@ class AccountResolver {
     ): Promise<AccountResponse> {
         if (options.username.length <= 2 || options.username.length > 25) {
             return {
-                errors: [{
-                    field: 'username',
-                    message: 'username must be between 3-25 characters'
-                }]
-            }
+                errors: [
+                    {
+                        field: 'username',
+                        message: 'username must be between 3-25 characters',
+                    },
+                ],
+            };
         }
 
         if (options.password.length < 8) {
             return {
-                errors: [{
-                    field: 'password',
-                    message: 'password must be 8 or more characters'
-                }]
-            }
+                errors: [
+                    {
+                        field: 'password',
+                        message: 'password must be 8 or more characters',
+                    },
+                ],
+            };
         }
 
         const hashedPassword = await argon2.hash(options.password);
-        const account = em.create(Account, { 
-            username: options.username, 
+        const account = em.create(Account, {
+            username: options.username,
             password: hashedPassword,
             email: options.email,
-            name: options.name 
+            name: options.name,
         });
 
         try {
-            await em.persistAndFlush(account)
+            await em.persistAndFlush(account);
         } catch (err) {
             if (err.code === '23505') {
                 // duplicate username error
                 return {
-                    errors: [{
-                        field: 'username or field',
-                        message: 'username or email already taken'
-                    }]
-                }
+                    errors: [
+                        {
+                            field: 'username or field',
+                            message: 'username or email already taken',
+                        },
+                    ],
+                };
             }
         }
         return { account };
@@ -90,14 +105,18 @@ class AccountResolver {
         @Arg('options') options: LoginInput,
         @Ctx() { em }: EntityManagerContext
     ): Promise<AccountResponse> {
-        const account = await em.findOne(Account, { username: options.username });
+        const account = await em.findOne(Account, {
+            username: options.username,
+        });
         if (!account) {
             return {
-                errors: [{ 
-                    field: 'username',
-                    message: 'account belonging to username does not exist'
-                }]
-            }
+                errors: [
+                    {
+                        field: 'username',
+                        message: 'account belonging to username does not exist',
+                    },
+                ],
+            };
         }
 
         const valid = await argon2.verify(account.password, options.password);
@@ -106,10 +125,10 @@ class AccountResolver {
                 errors: [
                     {
                         field: 'password',
-                        message: 'incorrect password'
-                    }
-                ]
-            }
+                        message: 'incorrect password',
+                    },
+                ],
+            };
         }
 
         return { account };

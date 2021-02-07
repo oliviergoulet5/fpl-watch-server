@@ -4,7 +4,8 @@ import Player from './entities/Player';
 export class FPLDataSource extends RESTDataSource {
     constructor() {
         super();
-        this.baseURL = 'https://fantasy.premierleague.com/api/bootstrap-static/';
+        this.baseURL =
+            'https://fantasy.premierleague.com/api/bootstrap-static/';
     }
 
     playerReducer(player: any) {
@@ -23,14 +24,14 @@ export class FPLDataSource extends RESTDataSource {
     async getPlayers() {
         const response = await this.get('', undefined, {
             headers: {
-                'User-Agent': ''
-            }
+                'User-Agent': '',
+            },
         });
 
         const playerArray = response.elements;
 
         return Array.isArray(playerArray)
-            ? playerArray.map((player) => this.playerReducer(player))
+            ? playerArray.map(player => this.playerReducer(player))
             : [];
     }
 }
