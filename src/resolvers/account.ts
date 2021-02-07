@@ -12,7 +12,7 @@ class AccountInput {
 }
 
 @Resolver()
-export class AccountResolver {
+class AccountResolver {
     @Query(() => [Account]) 
     accounts(@Ctx() { em }: EntityManagerContext): Promise<Account[]> {
         return em.find(Account, {});
@@ -33,3 +33,5 @@ export class AccountResolver {
         return account;
     }
 }
+
+export default AccountResolver;
