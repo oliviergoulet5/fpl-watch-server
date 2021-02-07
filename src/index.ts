@@ -10,6 +10,9 @@ import { buildSchema } from 'type-graphql';
 import { MikroORM } from '@mikro-orm/core';
 import microConfig from './mikro-orm.config'
 
+import {FPLDataSource} from './FPLDataSource';
+import { PlayerResolver } from './resolvers/player';
+
 const main = async () => {
     const orm = await MikroORM.init(microConfig);
     await orm.getMigrator().up();
@@ -18,10 +21,10 @@ const main = async () => {
     
     const apolloServer = new ApolloServer({ 
         schema: await buildSchema({
-            resolvers: [HelloResolver, AccountResolver],
-            validate: false
+            resolvers: [HelloResolver, AccountResolver, PlayerResolver],
+            validate: false,
         }),
-        context: () => ({ em: orm.em })
+        context: () => ({ em: orm.em, fplDataSource: new FPLDataSource() })
     });
 
     apolloServer.applyMiddleware({ app });
@@ -33,7 +36,3 @@ const main = async () => {
 };
 
 main().catch(err => console.log(err));
-
-// remember: yarn watch all time; delete migrations in ts and js; create migrations with npx; then run yarn dev
-// const account = orm.em.create(Account, {username: 'johndoe', password: 'password'} );
-// await orm.em.persistAndFlush(account);
