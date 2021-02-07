@@ -1,39 +1,32 @@
 import 'reflect-metadata';
 
-import { AccountResolver } from './resolvers/account';
-
 import express from 'express';
-import { ApolloServer } from 'apollo-server-express';
-import { buildSchema } from 'type-graphql';
-
-import { MikroORM } from '@mikro-orm/core';
-import microConfig from './mikro-orm.config'
+import { ApolloServer, IResolvers } from 'apollo-server-express';
 
 import {FPLDataSource} from './FPLDataSource';
-import { PlayerResolver } from './resolvers/player';
+import typeDefs from './typeDefs';
+
+const resolvers: IResolvers = {
+    Query: {
+        players: async (_, __, { dataSources }) => dataSources.fplAPI.getPlayers()
+    }
+};
 
 const main = async () => {
-    const orm = await MikroORM.init(microConfig);
-    await orm.getMigrator().up();
-
     const app = express();
     
     const apolloServer = new ApolloServer({ 
-        schema: await buildSchema({
-            resolvers: [AccountResolver, PlayerResolver],
-            validate: false,
-        }),
+        typeDefs,
+        resolvers,
         dataSources: () => {
             return {
                 fplAPI: new FPLDataSource()
             }
-        },
-        context: () => ({ em: orm.em })
+        }
     });
 
     apolloServer.applyMiddleware({ app });
     
-
     app.listen(4332, () => {
         console.log('Server started on 4332')
     });
