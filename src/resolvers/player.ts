@@ -1,6 +1,5 @@
 import { Ctx, Query, Resolver } from 'type-graphql';
 import Player from '../entities/Player';
-import { Context } from '../types';
 
 @Resolver()
 class PlayerResolver {

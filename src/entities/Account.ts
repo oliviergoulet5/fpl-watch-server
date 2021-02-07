@@ -16,8 +16,12 @@ export class Account {
     password!: string;
 
     @Field()
+    @Property({ unique: true })
+    email!: string;
+
+    @Field({ nullable: true })
     @Property({ nullable: true })
-    name: string;
+    name?: string;
 
     @Field(() => String)
     @Property({ type: 'date'})
