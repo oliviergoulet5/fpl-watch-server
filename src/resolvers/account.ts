@@ -86,7 +86,6 @@ class AccountResolver {
             await em.persistAndFlush(account);
         } catch (err) {
             if (err.code === '23505') {
-                // duplicate username error
                 return {
                     errors: [
                         {
@@ -97,6 +96,7 @@ class AccountResolver {
                 };
             }
         }
+        
         return { account };
     }
 
