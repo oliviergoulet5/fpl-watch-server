@@ -1,5 +1,5 @@
 import { Account } from '../entities/Account';
-import { EntityManagerContext } from '../types';
+import { Context } from '../types';
 import {
     Resolver,
     Query,
@@ -42,15 +42,25 @@ class AccountResponse {
 
 @Resolver()
 class AccountResolver {
+    @Query(() => Account, { nullable: true })
+    async me(@Ctx() { req, em }: Context) {
+        if (!req.session.accountId) {
+            return null;
+        }
+
+        const account = await em.findOne(Account, { id: req.session.accountId });
+        return account;
+    }
+    
     @Query(() => [Account])
-    accounts(@Ctx() { em }: EntityManagerContext): Promise<Account[]> {
+    accounts(@Ctx() { em }: Context): Promise<Account[]> {
         return em.find(Account, {});
     }
 
     @Mutation(() => AccountResponse)
     async register(
         @Arg('options') options: AccountInput,
-        @Ctx() { em }: EntityManagerContext
+        @Ctx() { em, req }: Context
     ): Promise<AccountResponse> {
         if (options.username.length <= 2 || options.username.length > 25) {
             return {
@@ -86,7 +96,6 @@ class AccountResolver {
             await em.persistAndFlush(account);
         } catch (err) {
             if (err.code === '23505') {
-                // duplicate username error
                 return {
                     errors: [
                         {
@@ -97,17 +106,22 @@ class AccountResolver {
                 };
             }
         }
+
+        // auto-login after registration
+        req.session.accountId = account.id;
+        
         return { account };
     }
 
     @Mutation(() => AccountResponse)
     async login(
         @Arg('options') options: LoginInput,
-        @Ctx() { em }: EntityManagerContext
+        @Ctx() { em, req }: Context
     ): Promise<AccountResponse> {
         const account = await em.findOne(Account, {
             username: options.username,
         });
+
         if (!account) {
             return {
                 errors: [
@@ -130,6 +144,8 @@ class AccountResolver {
                 ],
             };
         }
+
+        req.session.accountId = account.id;
 
         return { account };
     }
