@@ -1,23 +1,20 @@
 import 'reflect-metadata';
 
 import express from 'express';
-import { ApolloServer, IResolvers } from 'apollo-server-express';
+import { ApolloServer } from 'apollo-server-express';
+import { buildSchema } from 'type-graphql';
 
 import {FPLDataSource} from './FPLDataSource';
-import typeDefs from './typeDefs';
-
-const resolvers: IResolvers = {
-    Query: {
-        players: async (_, __, { dataSources }) => dataSources.fplAPI.getPlayers()
-    }
-};
+import PlayerResolver from './resolvers/player';
 
 const main = async () => {
     const app = express();
     
     const apolloServer = new ApolloServer({ 
-        typeDefs,
-        resolvers,
+        schema: await buildSchema({
+            resolvers: [PlayerResolver],
+            validate: false
+        }),
         dataSources: () => {
             return {
                 fplAPI: new FPLDataSource()

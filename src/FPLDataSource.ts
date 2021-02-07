@@ -1,5 +1,5 @@
 import { RESTDataSource } from 'apollo-datasource-rest';
-import fetch from 'node-fetch';
+import Player from './entities/Player';
 
 export class FPLDataSource extends RESTDataSource {
     constructor() {
@@ -8,18 +8,16 @@ export class FPLDataSource extends RESTDataSource {
     }
 
     playerReducer(player: any) {
-        return {
-            firstName: player.first_name,
-            lastName: player.second_name,
-            minutes: player.minutes,
-            goalsScored: player.goals_scored,
-            bonus: player.bonus,
-            bps: player.bps,
-            yellowCards: player.yellow_cards,
-            redCards: player.red_cards,
-            ictIndex: player.ict_index,
-            
-        }
+        let p = new Player();
+        p.firstName = player.first_name;
+        p.lastName = player.second_name;
+        p.minutes = player.minutes;
+        p.goalsScored = player.goals_scored;
+        p.redCards = player.red_cards;
+        p.yellowCards = player.yellow_cards;
+        p.ictIndex = player.ict_index;
+
+        return p;
     }
 
     async getPlayers() {
