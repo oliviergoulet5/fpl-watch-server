@@ -14,7 +14,7 @@ class AccountInput {
 @Resolver()
 export class AccountResolver {
     @Query(() => [Account]) 
-    accounts(@Ctx() { em }: EntityManagerContext): Promise<Account[]> {
+    accounts(@Ctx() {em}: EntityManagerContext): Promise<Account[]> {
         return em.find(Account, {});
     }
 

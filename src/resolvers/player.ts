@@ -1,5 +1,6 @@
 import { Field, ObjectType, Resolver, Query, Ctx, Int } from "type-graphql";
-import {FPLDataSource} from '../FPLDataSource';
+import { Context } from '../types';
+
 import fetch from 'node-fetch';
 
 type PlayerData = {
@@ -31,32 +32,18 @@ export class Player {
 
     @Field(() => Int)
     redCards: number
+
+    constructor(payload: Partial<Player>) {
+
+    }
 }
 
 @Resolver()
 export class PlayerResolver {
     @Query(() => [Player]) 
-    async players(): Promise<Player[]> {
-        
-        const response = await fetch('https://fantasy.premierleague.com/api/bootstrap-static/', { headers: {'User-Agent': ''}});
-        const allData = await response.json();
-        const playerData = allData.elements;
+    async players(@Ctx() {dataSources: { fplAPI }}: Context): Promise<Player[]> {
 
-        let players = new Array<Player>();
-        playerData.forEach((data: PlayerData) => {
-            let player = new Player();
-
-            player.firstName = data.first_name;
-            player.lastName = data.second_name;
-            player.yellowCards = data.yellow_cards;
-            player.redCards = data.red_cards;
-            player.minutes = data.minutes;
-            player.ownGoals = data.own_goals;
-            
-            players.push(player);
-        });
-
-        return players;
+        return await fplAPI.getPlayers();
     }
 
 }

@@ -6,8 +6,18 @@ export class FPLDataSource extends RESTDataSource {
         this.baseURL = 'https://fantasy.premierleague.com/api/bootstrap-static/'
     }
 
+    playerReducer(player: any) {
+        return {
+            firstName: player.first_name,
+            lastName: player.second_name
+        }
+    }
+
     async getPlayers() {
-        const { allResults } = await this.get('');
-        return allResults.elements;
+        const { response } = await this.get('');
+        console.log(response);
+        return Array.isArray(response)
+            ? response.map(player => this.playerReducer(player))
+            : [];
     }
 }

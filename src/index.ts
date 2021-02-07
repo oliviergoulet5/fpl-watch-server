@@ -1,6 +1,5 @@
 import 'reflect-metadata';
 
-import { HelloResolver } from './resolvers/hello';
 import { AccountResolver } from './resolvers/account';
 
 import express from 'express';
@@ -21,10 +20,15 @@ const main = async () => {
     
     const apolloServer = new ApolloServer({ 
         schema: await buildSchema({
-            resolvers: [HelloResolver, AccountResolver, PlayerResolver],
+            resolvers: [AccountResolver, PlayerResolver],
             validate: false,
         }),
-        context: () => ({ em: orm.em, fplDataSource: new FPLDataSource() })
+        dataSources: () => {
+            return {
+                fplAPI: new FPLDataSource()
+            }
+        },
+        context: () => ({ em: orm.em })
     });
 
     apolloServer.applyMiddleware({ app });
