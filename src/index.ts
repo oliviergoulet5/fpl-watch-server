@@ -8,6 +8,7 @@ import session from 'express-session';
 
 import * as pg from "pg";
 import connectPgSimple from 'connect-pg-simple';
+const pgSession = connectPgSimple(session);
 
 import { ApolloServer } from 'apollo-server-express';
 import { buildSchema } from 'type-graphql';
@@ -21,7 +22,7 @@ import { FPLDataSource } from './FPLDataSource';
 import PlayerResolver from './resolvers/player';
 import { __prod__ } from './constants';
 
-import { EntityManagerContext } from './types';
+import { Context } from './types';
 
 
 const main = async () => {
@@ -30,16 +31,14 @@ const main = async () => {
 
     const app = express();
 
-    const pgSession = connectPgSimple(session);
-    const store: session.Store = new pgSession({
-        pool: new pg.Pool({
-            connectionString: `postgres://${process.env.DB_USER}:${process.env.DB_PASS}@localhost:5432/fplwatch`
-        }),
-        tableName: 'user_session',
-    });
-
     app.use(session({
-        store,
+        name: 'fplwid',
+        store: new pgSession({
+            pool: new pg.Pool({
+                connectionString: `postgres://${process.env.DB_USER}:${process.env.DB_PASS}@localhost:5432/fplwatch`
+            }),
+            tableName: 'user_session',
+        }),
         secret: process.env.COOKIE_SECRET as string,
         resave: false,
         saveUninitialized: false,
@@ -61,7 +60,7 @@ const main = async () => {
                 fplAPI: new FPLDataSource(),
             };
         },
-        context: ({ req, res }): EntityManagerContext => ({ em: orm.em, req, res }), //Partial<Context>
+        context: ({ req, res }): Partial<Context> => ({ em: orm.em, req, res }), //Partial<Context>
     });
 
     apolloServer.applyMiddleware({ app });

@@ -1,5 +1,5 @@
 import { Account } from '../entities/Account';
-import { EntityManagerContext } from '../types';
+import { Context } from '../types';
 import {
     Resolver,
     Query,
@@ -43,14 +43,14 @@ class AccountResponse {
 @Resolver()
 class AccountResolver {
     @Query(() => [Account])
-    accounts(@Ctx() { em }: EntityManagerContext): Promise<Account[]> {
+    accounts(@Ctx() { em }: Context): Promise<Account[]> {
         return em.find(Account, {});
     }
 
     @Mutation(() => AccountResponse)
     async register(
         @Arg('options') options: AccountInput,
-        @Ctx() { em }: EntityManagerContext
+        @Ctx() { em }: Context
     ): Promise<AccountResponse> {
         if (options.username.length <= 2 || options.username.length > 25) {
             return {
@@ -103,11 +103,12 @@ class AccountResolver {
     @Mutation(() => AccountResponse)
     async login(
         @Arg('options') options: LoginInput,
-        @Ctx() { em }: EntityManagerContext
+        @Ctx() { em, req }: Context
     ): Promise<AccountResponse> {
         const account = await em.findOne(Account, {
             username: options.username,
         });
+
         if (!account) {
             return {
                 errors: [
@@ -130,6 +131,8 @@ class AccountResolver {
                 ],
             };
         }
+
+        req.session.accountId = account.id;
 
         return { account };
     }
