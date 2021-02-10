@@ -16,7 +16,7 @@ import FieldError from '../entities/FieldError';
 @InputType()
 class LoginInput {
     @Field()
-    username: string;
+    email: string;
 
     @Field()
     password: string;
@@ -25,7 +25,7 @@ class LoginInput {
 @InputType()
 class AccountInput extends LoginInput {
     @Field()
-    email: string;
+    username: string;
 
     @Field({ nullable: true })
     name?: string;
@@ -119,15 +119,15 @@ class AccountResolver {
         @Ctx() { em, req }: Context
     ): Promise<AccountResponse> {
         const account = await em.findOne(Account, {
-            username: options.username,
+            email: options.email,
         });
 
         if (!account) {
             return {
                 errors: [
                     {
-                        field: 'username',
-                        message: 'account belonging to username does not exist',
+                        field: 'email',
+                        message: 'account belonging to email does not exist',
                     },
                 ],
             };
