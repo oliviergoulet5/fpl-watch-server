@@ -5,6 +5,7 @@ dotenv.config();
 
 import express from 'express';
 import session from 'express-session';
+import cors from 'cors';
 
 import * as pg from "pg";
 import connectPgSimple from 'connect-pg-simple';
@@ -31,6 +32,8 @@ const main = async () => {
 
     const app = express();
 
+    app.use(cors());
+
     app.use(session({
         name: 'fplwid',
         store: new pgSession({
@@ -47,7 +50,7 @@ const main = async () => {
             httpOnly: true,
             secure: __prod__, // only works in https
             sameSite: 'lax'
-        }
+        } 
     }))
 
     const apolloServer = new ApolloServer({
