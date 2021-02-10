@@ -95,12 +95,12 @@ class AccountResolver {
         try {
             await em.persistAndFlush(account);
         } catch (err) {
-            if (err.code === '23505') {
+            if (err.code === '23505') { // needs to differentiate between username and email errors
                 return {
                     errors: [
                         {
-                            field: 'username or field',
-                            message: 'username or email already taken',
+                            field: 'username',
+                            message: 'username already taken',
                         },
                     ],
                 };
