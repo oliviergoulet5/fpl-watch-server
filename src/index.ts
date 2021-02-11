@@ -31,7 +31,10 @@ const main = async () => {
 
     const app = express();
 
-    app.use(cors());
+    app.use(cors({
+        origin: 'http://localhost:3000',
+        credentials: true
+    }));
 
     app.use(
         session({
@@ -67,7 +70,7 @@ const main = async () => {
         context: ({ req, res }): Partial<Context> => ({ em: orm.em, req, res }), //Partial<Context>
     });
 
-    apolloServer.applyMiddleware({ app });
+    apolloServer.applyMiddleware({ app, cors: false });
 
     app.listen(4332, () => {
         console.log('Server started on 4332');
