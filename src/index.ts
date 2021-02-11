@@ -7,7 +7,7 @@ import express from 'express';
 import session from 'express-session';
 import cors from 'cors';
 
-import * as pg from "pg";
+import * as pg from 'pg';
 import connectPgSimple from 'connect-pg-simple';
 const pgSession = connectPgSimple(session);
 
@@ -25,7 +25,6 @@ import { __prod__ } from './constants';
 
 import { Context } from './types';
 
-
 const main = async () => {
     const orm = await MikroORM.init(microConfig);
     await orm.getMigrator().up();
@@ -34,24 +33,26 @@ const main = async () => {
 
     app.use(cors());
 
-    app.use(session({
-        name: 'fplwid',
-        store: new pgSession({
-            pool: new pg.Pool({
-                connectionString: `postgres://${process.env.DB_USER}:${process.env.DB_PASS}@localhost:5432/fplwatch`
+    app.use(
+        session({
+            name: 'fplwid',
+            store: new pgSession({
+                pool: new pg.Pool({
+                    connectionString: `postgres://${process.env.DB_USER}:${process.env.DB_PASS}@localhost:5432/fplwatch`,
+                }),
+                tableName: 'user_session',
             }),
-            tableName: 'user_session',
-        }),
-        secret: process.env.COOKIE_SECRET as string,
-        resave: false,
-        saveUninitialized: false,
-        cookie: { 
-            maxAge: 30 * 24 * 60 * 60 * 1000,
-            httpOnly: true,
-            secure: __prod__, // only works in https
-            sameSite: 'lax'
-        } 
-    }))
+            secret: process.env.COOKIE_SECRET as string,
+            resave: false,
+            saveUninitialized: false,
+            cookie: {
+                maxAge: 30 * 24 * 60 * 60 * 1000,
+                httpOnly: true,
+                secure: __prod__, // only works in https
+                sameSite: 'lax',
+            },
+        })
+    );
 
     const apolloServer = new ApolloServer({
         schema: await buildSchema({

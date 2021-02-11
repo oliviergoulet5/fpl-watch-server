@@ -1,5 +1,6 @@
 import { Account } from '../entities/Account';
 import { Context } from '../types';
+import { EntityManager } from '@mikro-orm/postgresql';
 import {
     Resolver,
     Query,
@@ -48,10 +49,12 @@ class AccountResolver {
             return null;
         }
 
-        const account = await em.findOne(Account, { id: req.session.accountId });
+        const account = await em.findOne(Account, {
+            id: req.session.accountId,
+        });
         return account;
     }
-    
+
     @Query(() => [Account])
     accounts(@Ctx() { em }: Context): Promise<Account[]> {
         return em.find(Account, {});
@@ -85,17 +88,25 @@ class AccountResolver {
         }
 
         const hashedPassword = await argon2.hash(options.password);
-        const account = em.create(Account, {
-            username: options.username,
-            password: hashedPassword,
-            email: options.email,
-            name: options.name,
-        });
 
+        let account;
         try {
-            await em.persistAndFlush(account);
+            const result = await (em as EntityManager)
+                .createQueryBuilder(Account)
+                .getKnexQuery()
+                .insert({
+                    username: options.username,
+                    password: hashedPassword,
+                    email: options.email,
+                    name: options.name,
+                    created_at: new Date(),
+                    updated_at: new Date(),
+                })
+                .returning('*');
+            account = result[0];
         } catch (err) {
-            if (err.code === '23505') { // needs to differentiate between username and email errors
+            if (err.code === '23505') {
+                // needs to differentiate between username and email errors
                 return {
                     errors: [
                         {
@@ -109,7 +120,7 @@ class AccountResolver {
 
         // auto-login after registration
         req.session.accountId = account.id;
-        
+
         return { account };
     }
 
