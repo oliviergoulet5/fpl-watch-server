@@ -13,6 +13,7 @@ import {
 } from 'type-graphql';
 import argon2 from 'argon2';
 import FieldError from '../entities/FieldError';
+import { ACCOUNT_COOKIE_NAME } from '../constants';
 
 @InputType()
 class LoginInput {
@@ -159,6 +160,24 @@ class AccountResolver {
         req.session.accountId = account.id;
 
         return { account };
+    }
+
+    @Mutation(() => Boolean)
+    logout(@Ctx() { req, res }: Context) {
+        return new Promise(resolve =>
+            req.session.destroy((err: any) => {
+                res.clearCookie(ACCOUNT_COOKIE_NAME);
+
+                if (err) {
+                    console.log(err);
+                    resolve(false);
+                    return;
+                } else {
+                    resolve(true);
+                    return;
+                }
+            })
+        );
     }
 }
 
