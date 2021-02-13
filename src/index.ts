@@ -21,7 +21,7 @@ import AccountResolver from './resolvers/account';
 
 import { FPLDataSource } from './FPLDataSource';
 import PlayerResolver from './resolvers/player';
-import { __prod__ } from './constants';
+import { ACCOUNT_COOKIE_NAME, __prod__ } from './constants';
 
 import { Context } from './types';
 
@@ -31,14 +31,16 @@ const main = async () => {
 
     const app = express();
 
-    app.use(cors({
-        origin: 'http://localhost:3000',
-        credentials: true
-    }));
+    app.use(
+        cors({
+            origin: 'http://localhost:3000',
+            credentials: true,
+        })
+    );
 
     app.use(
         session({
-            name: 'fplwid',
+            name: ACCOUNT_COOKIE_NAME,
             store: new pgSession({
                 pool: new pg.Pool({
                     connectionString: `postgres://${process.env.DB_USER}:${process.env.DB_PASS}@localhost:5432/fplwatch`,
