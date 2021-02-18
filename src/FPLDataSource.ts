@@ -1,5 +1,8 @@
 import { RESTDataSource } from 'apollo-datasource-rest';
+import { mergeSchemas } from 'apollo-server-express';
 import Player from './entities/Player';
+import Filters from './entities/Filters';
+
 
 export class FPLDataSource extends RESTDataSource {
     constructor() {
@@ -21,17 +24,36 @@ export class FPLDataSource extends RESTDataSource {
         return p;
     }
 
-    async getPlayers() {
+    async getPlayers(options:Filters) {
         const response = await this.get('', undefined, {
             headers: {
                 'User-Agent': '',
             },
         });
+        let reducedPlayerArray:Array<Player> = [];
 
         const playerArray = response.elements;
+        
+  
+        if(Array.isArray(playerArray))
+        {
+            reducedPlayerArray=playerArray.map(player => this.playerReducer(player));
+        }
+        else
+        {
+            reducedPlayerArray=[];
+        }
+        if(options)
+        {
+            return reducedPlayerArray.filter(player =>player.goalsScored >= options.goalsScored.min && player.goalsScored <= options.goalsScored.max );
+             
 
-        return Array.isArray(playerArray)
-            ? playerArray.map(player => this.playerReducer(player))
-            : [];
+        }
+        
+             else
+             {
+                return reducedPlayerArray;
+             }
+     
     }
 }

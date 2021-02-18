@@ -24,6 +24,8 @@ import PlayerResolver from './resolvers/player';
 import { __prod__ } from './constants';
 
 import { Context } from './types';
+import { FixtureDataSource } from './FixtureDataSource';
+import FixtureResolver from './resolvers/fixture';
 
 const main = async () => {
     const orm = await MikroORM.init(microConfig);
@@ -56,12 +58,13 @@ const main = async () => {
 
     const apolloServer = new ApolloServer({
         schema: await buildSchema({
-            resolvers: [AccountResolver, PlayerResolver],
+            resolvers: [AccountResolver, PlayerResolver, FixtureResolver],
             validate: false,
         }),
         dataSources: () => {
             return {
                 fplAPI: new FPLDataSource(),
+                fixtureApi: new FixtureDataSource(),
             };
         },
         context: ({ req, res }): Partial<Context> => ({ em: orm.em, req, res }), //Partial<Context>
