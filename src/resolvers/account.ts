@@ -13,6 +13,7 @@ import {
 } from 'type-graphql';
 import argon2 from 'argon2';
 import FieldError from '../entities/FieldError';
+import { ACCOUNT_COOKIE_NAME } from '../constants';
 
 @InputType()
 class LoginInput {
@@ -30,6 +31,18 @@ class AccountInput extends LoginInput {
 
     @Field({ nullable: true })
     name?: string;
+}
+
+@InputType()
+class AccountInformationInput {
+    @Field({ nullable: true })
+    name?: string;
+
+    @Field({ nullable: true })
+    bio?: string;
+
+    @Field({ nullable: true })
+    avatar?: string;
 }
 
 @ObjectType()
@@ -159,6 +172,67 @@ class AccountResolver {
         req.session.accountId = account.id;
 
         return { account };
+    }
+
+    @Mutation(() => Boolean)
+    logout(@Ctx() { req, res }: Context) {
+        return new Promise(resolve =>
+            req.session.destroy((err: any) => {
+                res.clearCookie(ACCOUNT_COOKIE_NAME);
+
+                if (err) {
+                    console.log(err);
+                    resolve(false);
+                    return;
+                } else {
+                    resolve(true);
+                    return;
+                }
+            })
+        );
+    }
+
+    @Mutation(() => AccountResponse)
+    async updateAccount(
+        @Ctx() { req, em }: Context,
+        @Arg('options') options: AccountInformationInput,
+    ): Promise<AccountResponse> /*Promise<AccountResponse>*/ {
+        let accountNotSignedInError: FieldError = {
+            field: 'n/a',
+            message: 'user not signed in'
+        }
+
+        if (!req.session.accountId) return { errors: [ accountNotSignedInError ]}
+
+        let account = await em.findOne(Account, {
+            id: req.session.accountId
+        });
+
+        if (!account) return {
+            errors: [
+                accountNotSignedInError
+            ]
+        };
+
+        account.name = options.name;
+        account.bio = options.bio;
+        account.avatar = options.avatar;
+
+
+        try {
+            await em.persistAndFlush(account);
+        } catch (err) {
+            return {
+                errors: [
+                    {
+                        field: 'unknown',
+                        message: 'issue processing persist'
+                    }
+                ]
+            }
+        }
+        
+        return { account }
     }
 }
 

@@ -23,6 +23,14 @@ export class Account {
     @Property({ nullable: true })
     name?: string;
 
+    @Field({ nullable: true })
+    @Property({ nullable: true })
+    bio?: string;
+
+    @Field({ nullable: true })
+    @Property({ nullable: true })
+    avatar?: string;
+
     @Field(() => String)
     @Property({ type: 'date' })
     createdAt = new Date();

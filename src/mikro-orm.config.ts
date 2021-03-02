@@ -4,7 +4,7 @@ dotenv.config();
 import { __prod__ } from './constants';
 import { Account } from './entities/Account';
 import path from 'path';
-import { MikroORM } from '@mikro-orm/core';
+import { Options } from '@mikro-orm/core';
 
 export default {
     migrations: {
@@ -16,5 +16,7 @@ export default {
     password: process.env.DB_PASS,
     dbName: 'fplwatch',
     type: 'postgresql',
-    debug: !__prod__,
-} as Parameters<typeof MikroORM.init>[0];
+    debug: !__prod__
+} as Options;//as Parameters<typeof MikroORM.init>[0];
+
+// Change to Options exported from ORM instead of parameters<typeof ...>
