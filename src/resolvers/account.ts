@@ -201,6 +201,7 @@ class AccountResolver {
             field: 'n/a',
             message: 'user not signed in'
         }
+
         if (!req.session.accountId) return { errors: [ accountNotSignedInError ]}
 
         let account = await em.findOne(Account, {
@@ -217,10 +218,10 @@ class AccountResolver {
         account.bio = options.bio;
         account.avatar = options.avatar;
 
+
         try {
-            em.persistAndFlush(account);
+            await em.persistAndFlush(account);
         } catch (err) {
-            console.log(err);
             return {
                 errors: [
                     {

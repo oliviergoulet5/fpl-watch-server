@@ -69,7 +69,7 @@ const main = async () => {
                 fplAPI: new FPLDataSource(),
             };
         },
-        context: ({ req, res }): Partial<Context> => ({ em: orm.em, req, res }), //Partial<Context>
+        context: ({ req, res }): Partial<Context> => ({ em: orm.em.fork(), req, res }), //Partial<Context>
     });
 
     apolloServer.applyMiddleware({ app, cors: false });
