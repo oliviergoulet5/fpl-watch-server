@@ -33,6 +33,18 @@ class AccountInput extends LoginInput {
     name?: string;
 }
 
+@InputType()
+class AccountInformationInput {
+    @Field({ nullable: true })
+    name?: string;
+
+    @Field({ nullable: true })
+    bio?: string;
+
+    @Field({ nullable: true })
+    avatar?: string;
+}
+
 @ObjectType()
 class AccountResponse {
     @Field(() => [FieldError], { nullable: true })
@@ -178,6 +190,48 @@ class AccountResolver {
                 }
             })
         );
+    }
+
+    @Mutation(() => AccountResponse)
+    async updateAccount(
+        @Ctx() { req, em }: Context,
+        @Arg('options') options: AccountInformationInput,
+    ): Promise<AccountResponse> /*Promise<AccountResponse>*/ {
+        let accountNotSignedInError: FieldError = {
+            field: 'n/a',
+            message: 'user not signed in'
+        }
+        if (!req.session.accountId) return { errors: [ accountNotSignedInError ]}
+
+        let account = await em.findOne(Account, {
+            id: req.session.accountId
+        });
+
+        if (!account) return {
+            errors: [
+                accountNotSignedInError
+            ]
+        };
+
+        account.name = options.name;
+        account.bio = options.bio;
+        account.avatar = options.avatar;
+
+        try {
+            em.persistAndFlush(account);
+        } catch (err) {
+            console.log(err);
+            return {
+                errors: [
+                    {
+                        field: 'unknown',
+                        message: 'issue processing persist'
+                    }
+                ]
+            }
+        }
+        
+        return { account }
     }
 }
 
