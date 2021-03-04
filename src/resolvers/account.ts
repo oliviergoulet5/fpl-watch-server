@@ -196,7 +196,7 @@ class AccountResolver {
     async updateAccount(
         @Ctx() { req, em }: Context,
         @Arg('options') options: AccountInformationInput,
-    ): Promise<AccountResponse> /*Promise<AccountResponse>*/ {
+    ): Promise<AccountResponse> {
         let accountNotSignedInError: FieldError = {
             field: 'n/a',
             message: 'user not signed in'
