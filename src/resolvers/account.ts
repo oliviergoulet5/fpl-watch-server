@@ -43,6 +43,9 @@ class AccountInformationInput {
 
     @Field({ nullable: true })
     avatar?: string;
+
+    @Field({ nullable: true })
+    favouriteTeam?: string;
 }
 
 @ObjectType()
@@ -217,6 +220,7 @@ class AccountResolver {
         account.name = options.name;
         account.bio = options.bio;
         account.avatar = options.avatar;
+        account.favouriteTeam = options.favouriteTeam;
 
 
         try {

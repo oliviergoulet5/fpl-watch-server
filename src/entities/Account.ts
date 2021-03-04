@@ -26,6 +26,10 @@ export class Account {
     @Field({ nullable: true })
     @Property({ nullable: true })
     bio?: string;
+    
+    @Field({ nullable: true })
+    @Property({ nullable: true })
+    favouriteTeam?: string;
 
     @Field({ nullable: true })
     @Property({ nullable: true })
