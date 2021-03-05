@@ -14,6 +14,10 @@ import {
 import argon2 from 'argon2';
 import FieldError from '../entities/FieldError';
 import { ACCOUNT_COOKIE_NAME } from '../constants';
+import { FileUpload, GraphQLUpload } from 'graphql-upload';
+import AWS from 'aws-sdk';
+
+const s3Bucket = process.env.S3_BUCKET;
 
 @InputType()
 class LoginInput {
@@ -34,15 +38,21 @@ class AccountInput extends LoginInput {
 }
 
 @InputType()
-class AccountInformationInput {
+class UpdateAccountInput {
+    @Field({ nullable: true }) // not yet implemented
+    username?: string;
+
+    @Field({ nullable: true }) // not yet implemented
+    email?: string;
+
+    @Field({ nullable: true }) // not yet implemented
+    password?: string;
+
     @Field({ nullable: true })
     name?: string;
 
     @Field({ nullable: true })
     bio?: string;
-
-    @Field({ nullable: true })
-    avatar?: string;
 
     @Field({ nullable: true })
     favouriteTeam?: string;
@@ -68,12 +78,18 @@ class AccountResolver {
         const account = await em.findOne(Account, {
             id: req.session.accountId,
         });
+
         return account;
     }
 
     @Query(() => [Account])
-    accounts(@Ctx() { em }: Context): Promise<Account[]> {
-        return em.find(Account, {});
+    accounts(
+        @Ctx() { em }: Context,
+        @Arg('id', { nullable: true }) id?: number,
+    ): Promise<Account[]> {
+        let filters = { id };
+        
+        return em.find(Account, {...filters});
     }
 
     @Mutation(() => AccountResponse)
@@ -198,7 +214,7 @@ class AccountResolver {
     @Mutation(() => AccountResponse)
     async updateAccount(
         @Ctx() { req, em }: Context,
-        @Arg('options') options: AccountInformationInput,
+        @Arg('options') options: UpdateAccountInput,
     ): Promise<AccountResponse> {
         let accountNotSignedInError: FieldError = {
             field: 'n/a',
@@ -216,16 +232,16 @@ class AccountResolver {
                 accountNotSignedInError
             ]
         };
-
-        account.name = options.name;
-        account.bio = options.bio;
-        account.avatar = options.avatar;
-        account.favouriteTeam = options.favouriteTeam;
-
+        
+        options.name && (account.name = options.name);
+        options.bio && (account.bio = options.bio);
+        options.favouriteTeam && (account.favouriteTeam = options.favouriteTeam);
 
         try {
             await em.persistAndFlush(account);
+
         } catch (err) {
+
             return {
                 errors: [
                     {
@@ -238,6 +254,49 @@ class AccountResolver {
         
         return { account }
     }
+    
+    // Why is this mutation required instead of just simply using updateAccount? 
+    // https://github.com/jaydenseric/graphql-multipart-request-spec
+    @Mutation(() => Boolean)
+    async updateAvatar(
+        @Ctx() { req, em }: Context,
+        @Arg('avatar', () => GraphQLUpload) {
+            createReadStream
+        }: FileUpload): Promise<Boolean> {
+            return new Promise(async (resolve) => {
+                let account = await em.findOne(Account, {
+                    id: req.session.accountId
+                });
+
+                if (!account) return resolve(false);
+
+                const s3 = new AWS.S3({
+                    signatureVersion: 'v4',
+                    region: 'us-east-2'
+                });
+
+                s3.upload({
+                    Body: createReadStream(),
+                    Bucket: s3Bucket!,
+                    Key: `avatars/${account.id}`,
+                    ACL: 'public-read',
+                    ContentType: 'jpg',
+                }, (error, data) => {
+                    if (error) {
+                        console.error(error);
+                    }
+
+                    if (data) {
+                        console.log(data);
+                    }
+                });
+            }
+        )
+    }
 }
 
 export default AccountResolver;
+
+// Todo:
+
+// Instead of AccountResponse do: AccountResponse | FieldError | AuthenticationError for more flexibility
