@@ -6,6 +6,7 @@ dotenv.config();
 import express from 'express';
 import session from 'express-session';
 import cors from 'cors';
+import { graphqlUploadExpress } from 'graphql-upload';
 
 import * as pg from 'pg';
 import connectPgSimple from 'connect-pg-simple';
@@ -18,6 +19,7 @@ import { MikroORM } from '@mikro-orm/core';
 import microConfig from './mikro-orm.config';
 
 import AccountResolver from './resolvers/account';
+import S3Resolver from './resolvers/avatar';
 
 import { FPLDataSource } from './FPLDataSource';
 import PlayerResolver from './resolvers/player';
@@ -37,6 +39,8 @@ const main = async () => {
             credentials: true,
         })
     );
+
+    app.use(graphqlUploadExpress({ maxFileSize: 10000, maxFiles: 1 }));
 
     app.use(
         session({
@@ -61,9 +65,10 @@ const main = async () => {
 
     const apolloServer = new ApolloServer({
         schema: await buildSchema({
-            resolvers: [AccountResolver, PlayerResolver],
+            resolvers: [AccountResolver, PlayerResolver, S3Resolver],
             validate: false,
         }),
+        uploads: false,
         dataSources: () => {
             return {
                 fplAPI: new FPLDataSource(),
