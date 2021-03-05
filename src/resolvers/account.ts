@@ -54,9 +54,6 @@ class UpdateAccountInput {
     @Field({ nullable: true })
     bio?: string;
 
-    @Field(() => GraphQLUpload, { nullable: true })
-    avatar?: FileUpload;
-
     @Field({ nullable: true })
     favouriteTeam?: string;
 }
@@ -240,29 +237,6 @@ class AccountResolver {
         options.bio && (account.bio = options.bio);
         options.favouriteTeam && (account.favouriteTeam = options.favouriteTeam);
 
-        if (options.avatar) {
-            const s3 = new AWS.S3({
-                signatureVersion: 'v4',
-                region: 'us-east-2'
-            });
-
-            s3.upload({
-                Body: options.avatar.createReadStream(),
-                Bucket: s3Bucket!,
-                Key: `avatars/${account.id}`,
-                ACL: 'public-read',
-                ContentType: 'jpg',
-            }, (error, data) => {
-                if (error) {
-                    console.error(error);
-                }
-
-                if (data) {
-                    console.log(data);
-                }
-            });
-        }
-
         try {
             await em.persistAndFlush(account);
 
@@ -279,6 +253,45 @@ class AccountResolver {
         }
         
         return { account }
+    }
+    
+    // Why is this mutation required instead of just simply using updateAccount? 
+    // https://github.com/jaydenseric/graphql-multipart-request-spec
+    @Mutation(() => Boolean)
+    async updateAvatar(
+        @Ctx() { req, em }: Context,
+        @Arg('avatar', () => GraphQLUpload) {
+            createReadStream
+        }: FileUpload): Promise<Boolean> {
+            return new Promise(async (resolve) => {
+                let account = await em.findOne(Account, {
+                    id: req.session.accountId
+                });
+
+                if (!account) return resolve(false);
+
+                const s3 = new AWS.S3({
+                    signatureVersion: 'v4',
+                    region: 'us-east-2'
+                });
+
+                s3.upload({
+                    Body: createReadStream(),
+                    Bucket: s3Bucket!,
+                    Key: `avatars/${account.id}`,
+                    ACL: 'public-read',
+                    ContentType: 'jpg',
+                }, (error, data) => {
+                    if (error) {
+                        console.error(error);
+                    }
+
+                    if (data) {
+                        console.log(data);
+                    }
+                });
+            }
+        )
     }
 }
 
