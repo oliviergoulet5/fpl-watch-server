@@ -19,7 +19,6 @@ import { MikroORM } from '@mikro-orm/core';
 import microConfig from './mikro-orm.config';
 
 import AccountResolver from './resolvers/account';
-import S3Resolver from './resolvers/avatar';
 
 import { FPLDataSource } from './FPLDataSource';
 import PlayerResolver from './resolvers/player';
@@ -65,7 +64,7 @@ const main = async () => {
 
     const apolloServer = new ApolloServer({
         schema: await buildSchema({
-            resolvers: [AccountResolver, PlayerResolver, S3Resolver],
+            resolvers: [AccountResolver, PlayerResolver ],
             validate: false,
         }),
         uploads: false,
