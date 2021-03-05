@@ -257,37 +257,38 @@ class AccountResolver {
     
     // Why is this mutation required instead of just simply using updateAccount? 
     // https://github.com/jaydenseric/graphql-multipart-request-spec
-    @Mutation(() => Boolean)
+    @Mutation(() => String)
     async updateAvatar(
         @Ctx() { req, em }: Context,
         @Arg('avatar', () => GraphQLUpload) {
             createReadStream
-        }: FileUpload): Promise<Boolean> {
+        }: FileUpload): Promise<String> {
             return new Promise(async (resolve) => {
                 let account = await em.findOne(Account, {
                     id: req.session.accountId
                 });
 
-                if (!account) return resolve(false);
+                if (!account) return resolve('Error');
 
                 const s3 = new AWS.S3({
                     signatureVersion: 'v4',
                     region: 'us-east-2'
                 });
 
+                //let storedLocation: string | undefined;
                 s3.upload({
                     Body: createReadStream(),
                     Bucket: s3Bucket!,
-                    Key: `avatars/${account.id}`,
+                    Key: `avatars/${account!.id}`,
                     ACL: 'public-read',
                     ContentType: 'jpg',
-                }, (error, data) => {
-                    if (error) {
-                        console.error(error);
-                    }
-
-                    if (data) {
-                        console.log(data);
+                }, (_, data) => {
+                    if (account && data) {
+                        account.avatarLocation = data.Location;
+                        console.log(data.Location);
+                        em.persistAndFlush(account).finally(() => resolve(data.Location));
+                    } else {
+                        resolve('Error');
                     }
                 });
             }
