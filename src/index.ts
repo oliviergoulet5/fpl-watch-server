@@ -6,21 +6,22 @@ dotenv.config();
 import express from 'express';
 import session from 'express-session';
 import cors from 'cors';
+<<<<<<< Updated upstream
+=======
+import { graphqlUploadExpress } from 'graphql-upload';
+import createSchema from './utils/createSchema';
+>>>>>>> Stashed changes
 
 import * as pg from 'pg';
 import connectPgSimple from 'connect-pg-simple';
 const pgSession = connectPgSimple(session);
 
 import { ApolloServer } from 'apollo-server-express';
-import { buildSchema } from 'type-graphql';
 
 import { MikroORM } from '@mikro-orm/core';
 import microConfig from './mikro-orm.config';
 
-import AccountResolver from './resolvers/account';
-
 import { FPLDataSource } from './FPLDataSource';
-import PlayerResolver from './resolvers/player';
 import { ACCOUNT_COOKIE_NAME, __prod__ } from './constants';
 
 import { Context } from './types';
@@ -60,10 +61,15 @@ const main = async () => {
     );
 
     const apolloServer = new ApolloServer({
+<<<<<<< Updated upstream
         schema: await buildSchema({
             resolvers: [AccountResolver, PlayerResolver],
             validate: false,
         }),
+=======
+        schema: await createSchema(),
+        uploads: false,
+>>>>>>> Stashed changes
         dataSources: () => {
             return {
                 fplAPI: new FPLDataSource(),
