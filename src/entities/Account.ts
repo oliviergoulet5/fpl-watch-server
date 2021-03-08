@@ -26,10 +26,14 @@ export class Account {
     @Field({ nullable: true })
     @Property({ nullable: true })
     bio?: string;
+    
+    @Field({ nullable: true })
+    @Property({ nullable: true })
+    favouriteTeam?: string;
 
     @Field({ nullable: true })
     @Property({ nullable: true })
-    avatar?: string;
+    avatarLocation?: string;
 
     @Field(() => String)
     @Property({ type: 'date' })
