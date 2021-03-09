@@ -8,7 +8,9 @@
     "watch": "tsc -w",
     "dev": "nodemon dist/index.js",
     "start": "node dist/index.js",
-    "test": "jest",
+    "db:setup": "node ./dist/utils/tests/testConnection.js",
+    "test": "npm run db:setup && jest --forceExit --detectOpenHandles",
+    "test-log": "test -- --verbose false",
     "migration:create": "mikro-orm migration:create",
     "prettier": "./node_modules/.bin/prettier --write \"src/**/*.{ts,js,css,json,tsx,jsx}\"",
     "precommit": "lint-staged"
@@ -21,9 +23,9 @@
     "@mikro-orm/migrations": "^4.4.2",
     "@mikro-orm/postgresql": "^4.4.2",
     "@mikro-orm/reflection": "^4.4.2",
-    "@types/node": "^14.14.25",
     "@types/babel__generator": "^7.6.2",
     "@types/graphql": "^14.5.0",
+    "@types/node": "^14.14.25",
     "apollo-datasource-rest": "^0.9.7",
     "apollo-server": "^2.19.2",
     "apollo-server-express": "^2.19.2",
@@ -44,14 +46,15 @@
   },
   "jest": {
     "roots": [
-      "<rootDir>/src"
+      "<rootDir>/dist"
     ],
     "preset": "ts-jest",
     "testEnvironment": "node",
     "testPathIgnorePatterns": [
       ".d.ts",
-      ".js"
-    ]
+      "map.js"
+    ],
+    "coverageDirectory": "<rootDir>/dist"
   },
   "mikro-orm": {
     "useTsNode": true,
@@ -78,7 +81,9 @@
     "@types/connect-pg-simple": "^4.2.2",
     "@types/express": "^4.17.11",
     "@types/express-session": "^1.17.3",
+    "@types/faker": "^5.1.7",
     "@types/graphql-upload": "^8.0.4",
+    "@types/jest": "^26.0.20",
     "@types/node": "^14.14.31",
     "@types/pg": "^7.14.9",
     "faker": "^5.4.0",
