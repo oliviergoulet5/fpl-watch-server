@@ -135,6 +135,7 @@ class AccountResolver {
                     updated_at: new Date(),
                 })
                 .returning('*');
+
             account = result[0];
         } catch (err) {
             if (err.code === '23505') {
@@ -187,7 +188,7 @@ class AccountResolver {
                 ],
             };
         }
-
+        console.log('Id: ' + account.id);
         req.session.accountId = account.id;
 
         return { account };

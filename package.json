@@ -8,7 +8,9 @@
     "watch": "tsc -w",
     "dev": "nodemon dist/index.js",
     "start": "node dist/index.js",
-    "test": "jest",
+    "db:setup": "node ./dist/utils/tests/testConnection.js",
+    "test": "npm run db:setup && jest --forceExit --detectOpenHandles",
+    "test-log": "test -- --verbose false",
     "migration:create": "mikro-orm migration:create",
     "prettier": "./node_modules/.bin/prettier --write \"src/**/*.{ts,js,css,json,tsx,jsx}\"",
     "precommit": "lint-staged"
@@ -44,14 +46,15 @@
   },
   "jest": {
     "roots": [
-      "<rootDir>/src"
+      "<rootDir>/dist"
     ],
     "preset": "ts-jest",
     "testEnvironment": "node",
     "testPathIgnorePatterns": [
       ".d.ts",
-      ".js"
-    ]
+      "map.js"
+    ],
+    "coverageDirectory": "<rootDir>/dist"
   },
   "mikro-orm": {
     "useTsNode": true,

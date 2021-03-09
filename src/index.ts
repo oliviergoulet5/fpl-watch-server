@@ -1,5 +1,6 @@
 import 'reflect-metadata';
 
+import { ACCOUNT_COOKIE_NAME, __prod__ } from './constants';
 import dotenv from 'dotenv';
 dotenv.config();
 
@@ -7,22 +8,19 @@ import express from 'express';
 import session from 'express-session';
 import cors from 'cors';
 import { graphqlUploadExpress } from 'graphql-upload';
+import { ApolloServer } from 'apollo-server-express';
 
 import * as pg from 'pg';
 import connectPgSimple from 'connect-pg-simple';
 const pgSession = connectPgSimple(session);
 
-import { ApolloServer } from 'apollo-server-express';
 
 import { MikroORM } from '@mikro-orm/core';
 import microConfig from './mikro-orm.config';
+import { Context } from './types';
+import { createSchema } from './utils';
 
 import { FPLDataSource } from './FPLDataSource';
-import { ACCOUNT_COOKIE_NAME, __prod__ } from './constants';
-
-import { Context } from './types';
-import { buildSchema } from 'type-graphql';
-import { resolvers } from './resolvers';
 
 const main = async () => {
     const orm = await MikroORM.init(microConfig);
@@ -61,10 +59,7 @@ const main = async () => {
     );
 
     const apolloServer = new ApolloServer({
-        schema: await buildSchema({
-            resolvers,
-            validate: false,
-        }),
+        schema: await createSchema(), 
         uploads: false,
         dataSources: () => {
             return {
