@@ -15,16 +15,15 @@ import connectPgSimple from 'connect-pg-simple';
 const pgSession = connectPgSimple(session);
 
 
-import { MikroORM } from '@mikro-orm/core';
-import microConfig from './mikro-orm.config';
 import { Context } from './types';
 import { createSchema } from './utils';
 
 import { FPLDataSource } from './FPLDataSource';
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
 
 const main = async () => {
-    const orm = await MikroORM.init(microConfig);
-    await orm.getMigrator().up();
 
     const app = express();
 
@@ -66,7 +65,7 @@ const main = async () => {
                 fplAPI: new FPLDataSource(),
             };
         },
-        context: ({ req, res }): Partial<Context> => ({ em: orm.em.fork(), req, res }), //Partial<Context>
+        context: ({ req, res }): Partial<Context> => ({ prisma, req, res }), //Partial<Context>
     });
 
     apolloServer.applyMiddleware({ app, cors: false });
@@ -76,4 +75,8 @@ const main = async () => {
     });
 };
 
-main().catch(err => console.log(err));
+main()
+    .catch(err => console.log(err))
+    .finally(async () => {
+        await prisma.$disconnect();
+    });
