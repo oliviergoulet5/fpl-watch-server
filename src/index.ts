@@ -22,8 +22,7 @@ import { ACCOUNT_COOKIE_NAME, __prod__ } from './constants';
 
 import { Context } from './types';
 import { buildSchema } from 'type-graphql';
-import AccountResolver from './resolvers/account';
-import PlayerResolver from './resolvers/player';
+import { resolvers } from './resolvers';
 
 const main = async () => {
     const orm = await MikroORM.init(microConfig);
@@ -63,7 +62,7 @@ const main = async () => {
 
     const apolloServer = new ApolloServer({
         schema: await buildSchema({
-            resolvers: [AccountResolver, PlayerResolver ],
+            resolvers,
             validate: false,
         }),
         uploads: false,

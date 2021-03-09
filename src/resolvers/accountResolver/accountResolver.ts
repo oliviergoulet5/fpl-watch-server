@@ -1,5 +1,5 @@
-import { Account } from '../entities/Account';
-import { Context } from '../types';
+import { Account } from '../../entities/Account';
+import { Context } from '../../types';
 import { EntityManager } from '@mikro-orm/postgresql';
 import {
     Resolver,
@@ -12,8 +12,8 @@ import {
     ObjectType,
 } from 'type-graphql';
 import argon2 from 'argon2';
-import FieldError from '../entities/FieldError';
-import { ACCOUNT_COOKIE_NAME } from '../constants';
+import FieldError from '../../entities/FieldError';
+import { ACCOUNT_COOKIE_NAME } from '../../constants';
 import { FileUpload, GraphQLUpload } from 'graphql-upload';
 import AWS from 'aws-sdk';
 
