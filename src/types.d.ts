@@ -2,8 +2,7 @@ import FPLDataSource from './FPLDataSource';
 import { Request, Response, Express } from 'express';
 import { EntityManager, IDatabaseDriver, Connection } from '@mikro-orm/core';
 import { Stream } from 'stream';
-
-export type EM = EntityManager<any> & EntityManager<IDatabaseDriver<Connection>>;
+import { PrismaClient } from '@prisma/client';
 
 export type Context = {
     dataSources: {
@@ -11,7 +10,7 @@ export type Context = {
     };
     req: Request & { session: Express.Session };
     res: Response;
-    em: EM;
+    prisma: PrismaClient;
 };
 
 // Not currently in use

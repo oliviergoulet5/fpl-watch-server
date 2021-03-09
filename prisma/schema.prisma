@@ -1,0 +1,38 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model account {
+  id              Int      @id @default(autoincrement())
+  username        String   @unique @db.VarChar(25)
+  password        String
+  email           String   @unique @db.VarChar(255)
+  name            String?  @db.VarChar(255)
+  createdAt      DateTime @db.Timestamptz(0) @map("created_at")
+  updatedAt      DateTime @db.Timestamptz(0) @map("updated_at")
+  bio             String?  @db.VarChar(255)
+  avatarLocation String?  @db.VarChar(255) @map("avatar_location")
+  favouriteTeam  String?  @db.VarChar(255) @map("favourite_team")
+}
+
+model mikroOrmMigrations {
+  id          Int       @id @default(autoincrement())
+  name        String?   @db.VarChar(255)
+  executed_at DateTime? @default(now()) @db.Timestamptz(6)
+
+  @@map("mikro_orm_migrations")
+}
+
+model userSession {
+  sid    String   @id @db.VarChar
+  sess   Json     @db.Json
+  expire DateTime @db.Timestamp(6)
+
+  @@map("user_session")
+  @@index([expire], name: "IDX_session_expire")
+}
