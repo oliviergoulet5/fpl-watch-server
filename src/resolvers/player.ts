@@ -1,7 +1,7 @@
 import { Context } from 'src/types';
-import { Arg, Ctx, Query, Resolver,Int, ObjectType, Field} from 'type-graphql';
+import { Arg, Ctx, Query, Resolver} from 'type-graphql';
 import Player from '../entities/Player';
-import {Range,  InputRange}  from '../entities/Range';
+import {InputRange, InputRangeDouble}  from '../entities/Range';
 
 
 
@@ -11,12 +11,14 @@ class PlayerResolver {
     @Query(() => [Player])
     players(
         @Ctx() { dataSources: { fplAPI } }: Context,
-        @Arg("goalsScored",()=>InputRange,{nullable:true}) goalsScored?:InputRange
+        @Arg("goalsScored",()=>InputRange,{nullable:true}) goalsScored?:InputRange, 
+        @Arg("assists",()=>InputRange,{nullable:true}) assists?:InputRange,
+        @Arg("ict_index",()=>InputRangeDouble,{nullable:true}) ict_index?:InputRangeDouble,
         )
     
     : Promise<Player[]> 
     {
-        return fplAPI.getPlayers({goalsScored});
+        return fplAPI.getPlayers({goalsScored,assists,ict_index});
     }
 }
 

@@ -24,7 +24,7 @@ class Player {
     redCards: number;
 
     @Field(() => Float)
-    ictIndex: string;
+    ict_index: number;
 }
 
 export default Player;

@@ -1,5 +1,4 @@
 import { RESTDataSource } from 'apollo-datasource-rest';
-import { mergeSchemas } from 'apollo-server-express';
 import Player from './entities/Player';
 import Filters from './entities/Filters';
 
@@ -18,8 +17,9 @@ export class FPLDataSource extends RESTDataSource {
         p.minutes = player.minutes;
         p.goalsScored = player.goals_scored;
         p.redCards = player.red_cards;
+        p.assists = player.assists;
         p.yellowCards = player.yellow_cards;
-        p.ictIndex = player.ict_index;
+        p.ict_index = player.ict_index;
 
         return p;
     }
@@ -34,6 +34,7 @@ export class FPLDataSource extends RESTDataSource {
 
         const playerArray = response.elements;
         
+
   
         if(Array.isArray(playerArray))
         {
@@ -41,11 +42,12 @@ export class FPLDataSource extends RESTDataSource {
         }
         else
         {
+            
             reducedPlayerArray=[];
         }
         if(options)
         {
-            return reducedPlayerArray.filter(player =>player.goalsScored >= options.goalsScored.min && player.goalsScored <= options.goalsScored.max );
+            return reducedPlayerArray.filter(player => (options.goalsScored&& player.goalsScored>=options.goalsScored.min && player.goalsScored<=options.goalsScored.max)&&(options.assists && player.assists>=options.assists.min && player.assists<=options.assists.max)&&(options.ict_index&&player.ict_index>=options.ict_index.min&&player.ict_index<=options.ict_index.max));
              
 
         }
