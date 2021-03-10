@@ -1,4 +1,5 @@
 import FPLDataSource from './FPLDataSource';
+import FixtureDataSource from './FixtureDataSource';
 import { Request, Response, Express } from 'express';
 import { EntityManager, IDatabaseDriver, Connection } from '@mikro-orm/core';
 import { Stream } from 'stream';
@@ -7,6 +8,7 @@ import { PrismaClient } from '@prisma/client';
 export type Context = {
     dataSources: {
         fplAPI: FPLDataSource;
+        fixtureApi: FixtureDataSource;
     };
     req: Request & { session: Express.Session };
     res: Response;

@@ -22,6 +22,7 @@ import { FPLDataSource } from './FPLDataSource';
 import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
+import { FixtureDataSource } from './FixtureDataSource';
 
 const main = async () => {
 
@@ -63,6 +64,7 @@ const main = async () => {
         dataSources: () => {
             return {
                 fplAPI: new FPLDataSource(),
+                fixtureApi: new FixtureDataSource(),
             };
         },
         context: ({ req, res }): Partial<Context> => ({ prisma, req, res }), //Partial<Context>
