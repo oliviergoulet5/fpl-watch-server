@@ -36,26 +36,31 @@ export class FPLDataSource extends RESTDataSource {
         
 
   
-        if(Array.isArray(playerArray))
-        {
-            reducedPlayerArray=playerArray.map(player => this.playerReducer(player));
-        }
-        else
-        {
-            
+        if (Array.isArray(playerArray)) {
+            reducedPlayerArray = playerArray.map(player => this.playerReducer(player));
+            console.log(reducedPlayerArray);
+        } else {
             reducedPlayerArray=[];
         }
-        if(options)
-        {
-            return reducedPlayerArray.filter(player => (options.goalsScored&& player.goalsScored>=options.goalsScored.min && player.goalsScored<=options.goalsScored.max)&&(options.assists && player.assists>=options.assists.min && player.assists<=options.assists.max)&&(options.ict_index&&player.ict_index>=options.ict_index.min&&player.ict_index<=options.ict_index.max));
-             
 
-        }
+        return reducedPlayerArray.filter(player => 
+            (
+                options.goalsScored 
+                    && player.goalsScored>=options.goalsScored.min 
+                    && player.goalsScored<=options.goalsScored.max
+            )
+            &&
+            (
+                options.assists 
+                    && player.assists>=options.assists.min 
+                    && player.assists<=options.assists.max
+            )
+            &&
+            (
+                options.ict_index
+                    &&player.ict_index>=options.ict_index.min
+                    &&player.ict_index<=options.ict_index.max
+        ));
         
-             else
-             {
-                return reducedPlayerArray;
-             }
-     
     }
 }
