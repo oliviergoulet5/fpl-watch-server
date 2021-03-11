@@ -20,12 +20,10 @@ model account {
   favouriteTeam  String?  @db.VarChar(255) @map("favourite_team")
 }
 
-model mikroOrmMigrations {
-  id          Int       @id @default(autoincrement())
-  name        String?   @db.VarChar(255)
-  executed_at DateTime? @default(now()) @db.Timestamptz(6)
-
-  @@map("mikro_orm_migrations")
+model verificationCodes {
+  email   String  @id
+  code    String  @default(uuid())
+  createdAt DateTime  @default(now())
 }
 
 model userSession {
