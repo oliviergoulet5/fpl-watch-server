@@ -8,22 +8,25 @@ datasource db {
 }
 
 model account {
-  id              Int      @id @default(autoincrement())
-  username        String   @unique @db.VarChar(25)
+  id              Int       @id @default(autoincrement())
+  username        String    @unique @db.VarChar(25)
   password        String
-  email           String   @unique @db.VarChar(255)
-  name            String?  @db.VarChar(255)
-  createdAt      DateTime @db.Timestamptz(0) @map("created_at")
-  updatedAt      DateTime @db.Timestamptz(0) @map("updated_at")
-  bio             String?  @db.VarChar(255)
-  avatarLocation String?  @db.VarChar(255) @map("avatar_location")
-  favouriteTeam  String?  @db.VarChar(255) @map("favourite_team")
+  email           String    @unique @db.VarChar(255)
+  name            String?   @db.VarChar(255)
+  createdAt      DateTime   @db.Timestamptz(0) @map("created_at")
+  updatedAt      DateTime   @db.Timestamptz(0) @map("updated_at")
+  bio             String?   @db.VarChar(255)
+  avatarLocation String?    @db.VarChar(255) @map("avatar_location")
+  favouriteTeam  String?    @db.VarChar(255) @map("favourite_team")
 }
 
-model verificationCodes {
-  email   String  @id
-  code    String  @default(uuid())
-  createdAt DateTime  @default(now())
+model unverifiedAccounts {
+  id              Int       @id @default(autoincrement())
+  username        String    @unique @db.VarChar(25)
+  password        String  
+  email           String    @unique @db.VarChar(255)
+  code            String    @default(uuid())
+  codeCreatedAt   DateTime  @default(now())
 }
 
 model userSession {

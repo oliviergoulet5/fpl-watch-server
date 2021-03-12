@@ -7,10 +7,11 @@ import {
     Ctx,
     Arg,
 } from 'type-graphql';
-import { RegisterInput, AccountResponse, LoginInput, UpdateInput } from './accountTypes';
+import { RegisterInput, AccountResponse, UnverifiedAccountResponse, LoginInput, UpdateInput } from './accountTypes';
 import argon2 from 'argon2';
 import { ACCOUNT_COOKIE_NAME } from '../../constants';
 import FieldError from 'src/entities/FieldError';
+import { useCharacterRangeError, useAlreadyExistError, useUnknownError } from '../../utils';
 import { FileUpload, GraphQLUpload } from 'graphql-upload';
 import AWS from 'aws-sdk';
 
@@ -97,67 +98,51 @@ class AccountResolver {
     }
 
     // Register Mutation
-    @Mutation(() => AccountResponse)
+    @Mutation(() => UnverifiedAccountResponse)
     async register(
         @Arg('options') options: RegisterInput,
-        @Ctx() { req, prisma }: Context
+        @Ctx() { prisma }: Context
     ) {
         if (options.username.length <= 2 || options.username.length > 25) {
-            return {
-                errors: [
-                    {
-                        field: 'username',
-                        message: 'username must be between 3-25 characters.'
-                    }
-                ]
-            }
+            return useCharacterRangeError('username', { min: 2, max: 25 });
         }
 
         if (options.password.length < 8) {
-            return {
-                errors: [
-                    {
-                        field: 'password',
-                        message: 'password must be 8 or more characters'
-                    }
-                ]
-            }
+            return useCharacterRangeError('password', { min: 8 });
         }
 
+        const usernameTaken = await prisma.account.findUnique({
+            where: {
+                username: options.username
+            }
+        });
+
+        if (usernameTaken) return useAlreadyExistError('username');
+
+        const emailTaken = await prisma.account.findUnique({
+            where: {
+                email: options.email
+            }
+        });
+
+        if (emailTaken) return useAlreadyExistError('email');
+
         const hashedPassword = await argon2.hash(options.password);
-        let account;
+        let unverifiedAccount;
 
         try {
-            account = await prisma.account.create({
+            unverifiedAccount = await prisma.unverifiedAccounts.create({
                 data: {
                     email: options.email,
                     password: hashedPassword,
                     username: options.username,
-                    createdAt: new Date(),
-                    updatedAt: new Date()
                 }
             });
         } catch (error) {
-            if (error.code === '23505') return {
-                errors: [
-                    {
-                        field: 'username',
-                        message: 'username already taken'
-                    }
-                ]
-            }
+            return useUnknownError(error);
         }
 
-        if (!account) return {
-            errors: [
-                { field: 'unknown', message: 'account not created' }
-            ]
-        }
-
-        // login
-        req.session.accountId = account.id;
-
-        return { account };
+        return { unverifiedAccount };
     }
 
     // Update Account
@@ -217,6 +202,7 @@ class AccountResolver {
                                 avatarLocation: data.Location
                             }
                         });
+
                         resolve(data.Location);
                     } else {
                         resolve('Error');
