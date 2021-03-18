@@ -15,7 +15,7 @@ class PlayerResolver {
     
     : Promise<Player[]> 
     {
-        return fplAPI.getPlayers({goalsScored,assists,ict_index});
+        return fplAPI.getPlayers({goalsScored,assists,ict_index},);
     }
 }
 
