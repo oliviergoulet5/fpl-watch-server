@@ -1,13 +1,32 @@
-import FieldError from '../entities/FieldError';
+import { Error } from '../entities/errors';
 
-export const useAlreadyExistError = (field: string ): FieldError => {
+interface ErrorResponse {
+    error: Error;
+}
+
+export const useIncorrectFieldError = (field: string): ErrorResponse => {
     return {
-        field,
-        message: `${field} already taken`
+        error: {
+            fieldError: {
+                field,
+                message: `incorrect ${field}`
+            }
+        }
     }
 }
 
-export const useCharacterRangeError = (field: string, { min = 0, max }: { min?: number, max?: number }): FieldError => {
+export const useAlreadyExistError = (field: string ): ErrorResponse => {
+    return { 
+        error: {
+            fieldError: {
+                field,
+                message: `${field} already taken`
+            }
+        }
+    }
+}
+
+export const useCharacterRangeError = (field: string, { min = 0, max }: { min?: number, max?: number }): ErrorResponse => {
     let message: string;
 
     if (max && min === 0) {
@@ -20,14 +39,24 @@ export const useCharacterRangeError = (field: string, { min = 0, max }: { min?: 
         message = `${field} must be more than ${min} characters`
     }
 
-    return { field, message }
+    return {
+        error: { 
+            fieldError: {
+                field, 
+                message 
+            } 
+        }
+    }
 }
 
-export const useUnknownError = (exceptionMessage?: string): FieldError => {
+export const useUnknownError = (exceptionMessage?: string): ErrorResponse => {
     console.warn(`An unknown error has occurred. Consider replacing this error with a proper one. ${ exceptionMessage && `\n${exceptionMessage}`}`);
 
     return {
-        field: 'unknown',
-        message: 'an unknown error has occurred'
+        error: {
+            formError: {
+                message: 'an unknown error has occurred'
+            }
+        }
     }
 }

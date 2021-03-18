@@ -10,10 +10,10 @@ import {
 import { RegisterInput, AccountResponse, UnverifiedAccountResponse, LoginInput, UpdateInput } from './accountTypes';
 import argon2 from 'argon2';
 import { ACCOUNT_COOKIE_NAME } from '../../constants';
-import FieldError from 'src/entities/FieldError';
-import { useCharacterRangeError, useAlreadyExistError, useUnknownError } from '../../utils';
+import { useCharacterRangeError, useAlreadyExistError, useUnknownError, sendVerificationEmail, useIncorrectFieldError } from '../../utils';
 import { FileUpload, GraphQLUpload } from 'graphql-upload';
 import AWS from 'aws-sdk';
+import { unverifiedAccounts as UnverifiedAccount } from '@prisma/client';
 
 const s3Bucket = process.env.S3_BUCKET;
 
@@ -54,25 +54,11 @@ class AccountResolver {
             where: { email: options.email }
         });
 
-        if (!account) return {
-            errors: [
-                {
-                    field: 'email',
-                    message: 'account belonging to email does not exist'
-                }
-            ]
-        }
-        
+        if (!account) return useIncorrectFieldError('email');
+
         const valid = await argon2.verify(account.password, options.password);
 
-        if (!valid) return {
-            errors: [
-                {
-                    field: 'password',
-                    message: 'incorrect password'
-                }
-            ]
-        }
+        if (!valid) return useIncorrectFieldError('password');
 
         req.session.accountId = account.id;
 
@@ -103,13 +89,16 @@ class AccountResolver {
         @Arg('options') options: RegisterInput,
         @Ctx() { prisma }: Context
     ) {
-        if (options.username.length <= 2 || options.username.length > 25) {
-            return useCharacterRangeError('username', { min: 2, max: 25 });
-        }
+        if (options.username.length <= 2 || options.username.length > 25) return useCharacterRangeError('username', { min: 2, max: 25 }) 
+        if (options.password.length < 8) return useCharacterRangeError('password', { min: 8 }) 
 
-        if (options.password.length < 8) {
-            return useCharacterRangeError('password', { min: 8 });
-        }
+        const emailTaken = await prisma.account.findUnique({
+            where: {
+                email: options.email
+            }
+        });
+        
+        if (emailTaken) return useAlreadyExistError('email')
 
         const usernameTaken = await prisma.account.findUnique({
             where: {
@@ -117,18 +106,10 @@ class AccountResolver {
             }
         });
 
-        if (usernameTaken) return useAlreadyExistError('username');
-
-        const emailTaken = await prisma.account.findUnique({
-            where: {
-                email: options.email
-            }
-        });
-
-        if (emailTaken) return useAlreadyExistError('email');
-
+        if (usernameTaken) return useAlreadyExistError('username')
+        
         const hashedPassword = await argon2.hash(options.password);
-        let unverifiedAccount;
+        let unverifiedAccount: UnverifiedAccount | undefined;
 
         try {
             unverifiedAccount = await prisma.unverifiedAccounts.create({
@@ -138,11 +119,47 @@ class AccountResolver {
                     username: options.username,
                 }
             });
+
+            sendVerificationEmail(unverifiedAccount.email, unverifiedAccount.code)
+                .catch(error => {
+                    throw error;
+                });
+
         } catch (error) {
             return useUnknownError(error);
         }
 
         return { unverifiedAccount };
+    }
+    
+    @Mutation(() => AccountResponse)
+    async verify(
+        @Arg('email') email: string,
+        @Arg('code') code: string,
+        @Ctx() { prisma }: Context
+    ) {
+        try {
+            const verifyingAccount = await prisma.unverifiedAccounts.findUnique({
+                where: {
+                    email
+                }
+            });
+            // Todo: create a mutation to generate a new code.
+            if (!verifyingAccount) return useUnknownError('An account with that email could not be found. Try a new code.');
+
+            if (verifyingAccount.code !== code) return useUnknownError('The verification code provided did not match.')
+            
+            return await prisma.account.create({
+                data: {
+                    email: verifyingAccount.email,
+                    username: verifyingAccount.username,
+                    password: verifyingAccount.password
+                }
+            });
+
+        } catch (error) {
+            return useUnknownError(error);
+        }
     }
 
     // Update Account
@@ -151,21 +168,24 @@ class AccountResolver {
         @Arg('options') options: UpdateInput,
         @Ctx() { req, prisma }: Context
     ) {
-        const accountNotSignedIn: FieldError = {
-            field: 'n/a',
-            message: 'user not signed in'
-        };
-
         if (!req.session.accountId) return {
-            errors: [ accountNotSignedIn ]
+            error: {
+                formError: {
+                    message: 'user is not signed in'
+                }
+            }
         }
+
+        console.log('Something');
 
         const account = await prisma.account.update({
             where: { id: req.session.accountId },
             data: { 
                 ...options
             }
-        })
+        });
+        console.log(account);
+        if (!account) return useUnknownError('could not update account');
 
         return { account };
     }
@@ -210,8 +230,6 @@ class AccountResolver {
                 })
             });
         }
-    
-
 }
 
 export default AccountResolver;
