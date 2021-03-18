@@ -1,5 +1,5 @@
-import { Field, ObjectType } from "type-graphql";
-import  {DoubleRange, Range}  from "./Range";
+import { Field, ObjectType } from 'type-graphql';
+import { DoubleRange, Range } from './Range';
 
 @ObjectType()
 class Filters {
