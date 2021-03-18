@@ -25,7 +25,6 @@ const prisma = new PrismaClient();
 import { FixtureDataSource } from './FixtureDataSource';
 
 const main = async () => {
-
     const app = express();
 
     app.use(

@@ -1,11 +1,13 @@
 import { ObjectType, InputType, Field } from 'type-graphql';
-import FieldError from '../../entities/FieldError';
+import { Error } from '../../entities/errors';
 import { Account } from '../../entities/Account';
+import { UnverifiedAccount } from '../../entities/UnverifiedAccount';
+
 
 @ObjectType()
 export class AccountResponse {
-    @Field(() => [FieldError], { nullable: true })
-    errors?: FieldError[];
+    @Field(() => Error, { nullable: true })
+    error?: Error
 
     @Field(() => Account, { nullable: true })
     account?: Account;
@@ -45,4 +47,13 @@ export class UpdateInput {
 
     @Field({ nullable: true })
     favouriteTeam?: string;
+}
+
+@ObjectType()
+export class UnverifiedAccountResponse {
+    @Field(() => Error, { nullable: true })
+    error?: Error;
+
+    @Field(() => UnverifiedAccount, { nullable: true })
+    unverifiedAccount?: UnverifiedAccount;
 }
