@@ -168,6 +168,7 @@ class AccountResolver {
         @Arg('options') options: UpdateInput,
         @Ctx() { req, prisma }: Context
     ) {
+
         if (!req.session.accountId) return {
             error: {
                 formError: {
@@ -176,15 +177,13 @@ class AccountResolver {
             }
         }
 
-        console.log('Something');
-
         const account = await prisma.account.update({
             where: { id: req.session.accountId },
             data: { 
                 ...options
             }
         });
-        console.log(account);
+
         if (!account) return useUnknownError('could not update account');
 
         return { account };
@@ -214,17 +213,18 @@ class AccountResolver {
                     Key: `avatars/${account!.id}`,
                     ACL: 'public-read',
                     ContentType: 'jpg',
-                }, (_, data) => {
+                }, async (err, data) => {
                     if (data) {
-                        prisma.account.update({
+                        await prisma.account.update({
                             where: { id: account.id },
                             data: {
                                 avatarLocation: data.Location
                             }
                         });
-
+                        console.log(data.Location);
                         resolve(data.Location);
                     } else {
+                        console.error(err);
                         resolve('Error');
                     }
                 })
