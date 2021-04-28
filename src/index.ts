@@ -34,7 +34,7 @@ const main = async () => {
         })
     );
 
-    app.use(graphqlUploadExpress({ maxFileSize: 10000, maxFiles: 1 }));
+    app.use(graphqlUploadExpress({ maxFileSize: 100000, maxFiles: 1 }));
 
     app.use(
         session({
