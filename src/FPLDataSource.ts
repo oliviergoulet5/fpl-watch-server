@@ -3,7 +3,6 @@ import Player from './entities/Player';
 import { SocialMedia } from './entities/SocialMedia';
 import { Club } from './entities/Club';
 import Filters from './entities/Filters';
-import CLUB_PROFILES from '../clubProfiles.json';
 
 export class FPLDataSource extends RESTDataSource {
     constructor() {
@@ -14,10 +13,6 @@ export class FPLDataSource extends RESTDataSource {
 
     private getClubCrestLocation(clubCode: number): string {
         return `https://resources.premierleague.com/premierleague/badges/t${clubCode}.png`;
-    }
-
-    private getClubSocialMedia(shortName: keyof typeof CLUB_PROFILES) {
-        console.log(CLUB_PROFILES[shortName])
     }
 
     clubReducer(club: any) {
@@ -36,12 +31,7 @@ export class FPLDataSource extends RESTDataSource {
 
         c.crestLocation = this.getClubCrestLocation(club.code);
 
-        c.socialMedia = new SocialMedia();
-        c.socialMedia.facebook = 'yoyo';
-        
-        if (c.shortName in CLUB_PROFILES) {
-            this.getClubSocialMedia(c.shortName as unknown as keyof typeof CLUB_PROFILES);
-        }
+        c.socialMedia = new SocialMedia(c.shortName as unknown);
 
         return c;
     }
