@@ -30,8 +30,7 @@ export class FPLDataSource extends RESTDataSource {
         c.strengthDefenceAway = club.strength_defence_away;
 
         c.crestLocation = this.getClubCrestLocation(club.code);
-
-        c.socialMedia = new SocialMedia(c.shortName as unknown);
+        c.socialMedia = new SocialMedia(c.shortName);
 
         return c;
     }
