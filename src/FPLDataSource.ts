@@ -1,5 +1,7 @@
 import { RESTDataSource } from 'apollo-datasource-rest';
 import Player from './entities/Player';
+import { SocialMedia } from './entities/SocialMedia';
+import { Club } from './entities/Club';
 import Filters from './entities/Filters';
 
 export class FPLDataSource extends RESTDataSource {
@@ -7,6 +9,30 @@ export class FPLDataSource extends RESTDataSource {
         super();
         this.baseURL =
             'https://fantasy.premierleague.com/api/bootstrap-static/';
+    }
+
+    private getClubCrestLocation(clubCode: number): string {
+        return `https://resources.premierleague.com/premierleague/badges/t${clubCode}.png`;
+    }
+
+    clubReducer(club: any) {
+        let c = new Club();
+        c.name = club.name;
+        c.shortName = club.short_name;
+        c.points = club.points;
+
+        c.strength = club.strength;
+        c.strengthOverallHome = club.strength_overall_home;
+        c.strengthOverallAway = club.strength_overall_away;
+        c.strengthAttackHome = club.strength_attack_home;
+        c.strengthAttackAway = club.strength_attack_away;
+        c.strengthDefenceHome = club.strength_defence_home;
+        c.strengthDefenceAway = club.strength_defence_away;
+
+        c.crestLocation = this.getClubCrestLocation(club.code);
+        c.socialMedia = new SocialMedia(c.shortName);
+
+        return c;
     }
 
     playerReducer(player: any) {
@@ -23,12 +49,42 @@ export class FPLDataSource extends RESTDataSource {
         return p;
     }
 
+    async getClubs(options: { shortName: string }): Promise<Club[]> {
+        const response = await this.get('', undefined, {
+            headers: {
+                'User-Agent': '',
+            },
+        });
+        
+        let reducedClubArray: Array<Club> = [];
+        let clubArray = response['teams'];
+
+        if (Array.isArray(clubArray)) {
+            reducedClubArray = clubArray.map(club => 
+                this.clubReducer(club)
+            );
+        }
+
+        if (options.shortName) {
+            let club = reducedClubArray.find((club) => club.shortName === options.shortName);
+            
+            if (!club) {
+                return [];
+            }
+
+            return [club];
+        }
+
+        return reducedClubArray;
+    } 
+
     async getPlayers(options: Filters) {
         const response = await this.get('', undefined, {
             headers: {
                 'User-Agent': '',
             },
         });
+
         let reducedPlayerArray: Array<Player> = [];
 
         const playerArray = response.elements;

@@ -1,0 +1,111 @@
+{
+    "ARS": {
+        "defaultHandle": "Arsenal",
+        "except": {}
+    },
+    "AVL": {
+        "defaultHandle": "avfcofficial",
+        "except": {}
+    },
+    "BHA": {
+        "defaultHandle": "officialbhafc",
+        "except": {
+            "tiktok": {
+                "has": false,
+                "handle": ""
+            }
+        }
+    },
+    "BUR": {
+        "defaultHandle": "burnleyofficial",
+        "except": {
+            "tiktok": {
+                "has": false,
+                "handle": ""
+            }
+        }
+    },
+    "CHE": {
+        "defaultHandle": "ChelseaFC",
+        "except": {
+            "tiktok": {
+                "has": false,
+                "handle": ""
+            }
+        }
+    },
+    "CRY": {
+        "defaultHandle": "officialcpfc",
+        "except": {
+            "youtube": {
+                "has": true,
+                "handle": "cpfc"
+            },
+            "tiktok": {
+                "has": true,
+                "handle": "cpfc"
+            }
+        }
+    },
+    "EVE": {
+        "defaultHandle": "Everton",
+        "except": {}
+    },
+    "FUL": {
+        "defaultHandle": "FulhamFC",
+        "except": {}
+    },
+    "LEE": {
+        "defaultHandle": "leedsunited",
+        "except": {
+            "youtube": {
+                "has": true,
+                "handle": "LeedsUnitedOfficial"
+            }
+        }
+    },
+    "LEI": {
+        "defaultHandle": "lcfc",
+        "except": {}
+    },
+    "LIV": {
+        "defaultHandle": "LiverpoolFC",
+        "except": {}
+    },
+    "MCI": {
+        "defaultHandle": "mancity",
+        "except": {}
+    },
+    "MUN": {
+        "defaultHandle": "manchesterunited",
+        "except": {}
+    },
+    "NEW": {
+        "defaultHandle": "newcastleunited",
+        "except": {}
+    },
+    "SOU": {
+        "defaultHandle": "southamptonfc",
+        "except": {}
+    },
+    "SHU": {
+        "defaultHandle": "sheffieldunited",
+        "except": {}
+    },
+    "TOT": {
+        "defaultHandle": "TottenhamHotspur",
+        "except": {}
+    },
+    "WBA": {
+        "defaultHandle": "westbromwichalbionofficial",
+        "except": {}
+    },
+    "WHU": {
+        "defaultHandle": "WestHam",
+        "except": {}
+    },
+    "WOL": {
+        "defaultHandle": "Wolves",
+        "except": {}
+    }
+}
