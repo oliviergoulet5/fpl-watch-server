@@ -52,7 +52,7 @@ model article {
   title           String    @db.VarChar(255)
   content         String    @db.Text
   date            DateTime  @default(now())
-  category        String
+  category        String    @default("Uncategorized")
   tags            String[]  
 
   // Author to Account relation
