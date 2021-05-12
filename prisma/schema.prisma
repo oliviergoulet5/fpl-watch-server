@@ -13,11 +13,20 @@ model account {
   password        String
   email           String    @unique @db.VarChar(255)
   name            String?   @db.VarChar(255)
-  createdAt      DateTime   @default(now()) @map("created_at")
-  updatedAt      DateTime   @default(now()) @map("updated_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @default(now()) @map("updated_at")
   bio             String?   @db.VarChar(255)
-  avatarLocation String?    @db.VarChar(255) @map("avatar_location")
-  favouriteTeam  String?    @db.VarChar(255) @map("favourite_team")
+  avatarLocation  String?   @db.VarChar(255) @map("avatar_location")
+  favouriteTeam   String?   @db.VarChar(255) @map("favourite_team")
+
+  articles        article[] @relation(name: "account-articles")
+  comments        comment[] @relation("posted-from")
+
+  likedComments   comment[] @relation("comment-likes")
+  likedArticles   article[] @relation("article-likes")
+
+  dislikedComments  comment[] @relation("comment-dislikes")
+  dislikedArticles  article[] @relation("article-dislikes")
 }
 
 model unverifiedAccounts {
@@ -36,4 +45,40 @@ model userSession {
 
   @@map("user_session")
   @@index([expire], name: "IDX_session_expire")
+}
+
+model article {
+  id              Int       @id @default(autoincrement())
+  title           String    @db.VarChar(255)
+  content         String    @db.Text
+  date            DateTime  @default(now())
+  category        String
+  tags            String[]  
+
+  // Author to Account relation
+  author          account   @relation(name: "account-articles", fields: [authorId], references: [id])
+  authorId        Int
+
+  likedBy         account[]   @relation("article-likes")
+  dislikedBy      account[]   @relation("article-dislikes")
+}
+
+model comment {
+  id              Int         @id @default(autoincrement())
+
+  content         String      @db.Text
+  edited          Boolean     @db.Boolean @default(false)
+  date            DateTime    @default(now())
+
+  // Poster relation
+  from            account     @relation("posted-from", fields: [fromId], references: [id])
+  fromId          Int
+
+  likedBy         account[]   @relation("comment-likes")
+  dislikedBy      account[]   @relation("comment-dislikes")
+
+  // Parent-child comment relation
+  parentId        Int?        
+  parent          comment?    @relation("hierarchy", fields: [parentId], references: [id])
+  replies         comment[]   @relation("hierarchy")
 }
