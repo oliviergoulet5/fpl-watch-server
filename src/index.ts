@@ -66,7 +66,11 @@ const main = async () => {
                 fixtureApi: new FixtureDataSource(),
             };
         },
-        context: ({ req, res }): Partial<Context> => ({ prisma, req, res }), //Partial<Context>
+        context: ({ req, res }): Partial<Context> => ({ 
+            prisma, 
+            req, 
+            res, 
+        }),
     });
 
     apolloServer.applyMiddleware({ app, cors: false });

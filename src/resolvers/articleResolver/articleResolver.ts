@@ -1,10 +1,26 @@
 import { Article } from "../../entities/Article";
-import { Arg, Ctx, Field, InputType, Mutation, Query, Resolver, Int, ObjectType } from "type-graphql";
+import { Arg, Ctx, Mutation, Query, Resolver } from "type-graphql";
 import { Context } from "../../types";
 import { useUnknownError } from '../../utils/errors';
 import { EditArticleInput, ArticleInput, ArticleResponse } from './articleTypes';
-import { Comment } from '../../entities/Comment';
-import { CommentInput } from './commentTypes';
+import { CommentInput, CommentResponse } from './commentTypes';
+import { Prisma } from '@prisma/client';
+
+const commentSelect: Prisma.articleInclude = {
+    comments: {
+        include: {
+            likedBy: true,
+            dislikedBy: true,
+            article: true,
+            from: true,
+            parent: true,
+            replies: true
+        },
+        where: {
+            parentId: null
+        }
+    }
+}
 
 @Resolver()
 export class ArticleResolver {
@@ -15,7 +31,7 @@ export class ArticleResolver {
     ) {
         const articles = prisma.article.findMany({
             where: { id },
-            include: { comments: true, author: true }
+            include: { ...commentSelect, author: true }, 
         });
 
         return articles;
@@ -31,7 +47,7 @@ export class ArticleResolver {
                 data: { ...options }
             });
 
-            return article;
+            return { article };
         } catch (error) {
             return useUnknownError('An unknown error has occurred.');
         }
@@ -46,10 +62,11 @@ export class ArticleResolver {
         try {
             const article = await prisma.article.update({
                 where: { id },
-                data: { ...options }
+                data: { ...options },
+                include: { ...commentSelect, author: true }
             });
 
-            return article;
+            return { article };
         } catch (error) {
             return useUnknownError('An unknown error has occurred.');
         }
@@ -64,6 +81,7 @@ export class ArticleResolver {
             await prisma.article.delete({
                 where: { id }
             });
+
         } catch (error) {
             return false;
         }
@@ -71,34 +89,43 @@ export class ArticleResolver {
         return true;
     }
 
-    @Mutation(() => Comment)
+    @Mutation(() => CommentResponse)
     async postComment(
-        @Ctx() { prisma }: Context,
+        @Ctx() { prisma, req }: Context,
         @Arg('articleId') id: number,
         @Arg('options') options: CommentInput
     ) {
         try {
+            if (!req.session.accountId) return useUnknownError('Not authenticated.');
+
+            const account = await prisma.account.findUnique({
+                where: { id: req.session.accountId }
+            });
+
+            if (!account) {
+                return useUnknownError('Account not found.')
+            }
+
             const comment = await prisma.comment.create({
                 data: {
-                    fromId: 1, // userid
+                    fromId: account.id,
                     articleId: id,
                     ...options
-                }
-            });
-
-            await prisma.article.findUnique({
-                where: { id },
+                },
                 include: {
-                    comments: true
+                    likedBy: true,
+                    dislikedBy: true,
+                    article: true,
+                    from: true,
+                    parent: true,
+                    replies: true
                 }
             });
 
-            return comment;
+            return { comment };
         } catch (error) {
-            console.error(error);
             return useUnknownError();
         }
-
     }
 }
 

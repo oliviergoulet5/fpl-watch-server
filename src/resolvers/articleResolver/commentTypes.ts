@@ -13,9 +13,9 @@ export class CommentInput {
 
 @ObjectType()
 export class CommentResponse {
-    @Field(() => Comment)
+    @Field(() => Comment, { nullable: true })
     comment: Comment
 
-    @Field(() => Error)
+    @Field(() => Error, { nullable: true })
     error: Error
 }

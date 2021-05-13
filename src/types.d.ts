@@ -3,7 +3,8 @@ import FixtureDataSource from './FixtureDataSource';
 import { Request, Response, Express } from 'express';
 import { EntityManager, IDatabaseDriver, Connection } from '@mikro-orm/core';
 import { Stream } from 'stream';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, account } from '@prisma/client';
+import { Account } from './entities/Account';
 
 export type Context = {
     dataSources: {
