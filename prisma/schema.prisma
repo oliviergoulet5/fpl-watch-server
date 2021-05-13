@@ -61,6 +61,8 @@ model article {
 
   likedBy         account[]   @relation("article-likes")
   dislikedBy      account[]   @relation("article-dislikes")
+
+  comments        comment[]   @relation("article-comments")
 }
 
 model comment {
@@ -81,4 +83,7 @@ model comment {
   parentId        Int?        
   parent          comment?    @relation("hierarchy", fields: [parentId], references: [id])
   replies         comment[]   @relation("hierarchy")
+
+  article         article?    @relation("article-comments", fields: [articleId], references: [id])
+  articleId       Int?
 }
