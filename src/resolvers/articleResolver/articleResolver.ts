@@ -1,50 +1,10 @@
 import { Article } from "../../entities/Article";
 import { Arg, Ctx, Field, InputType, Mutation, Query, Resolver, Int, ObjectType } from "type-graphql";
 import { Context } from "../../types";
-import { Error } from '../../entities/errors';
 import { useUnknownError } from '../../utils/errors';
-
-@InputType()
-export class ArticleInput {
-    @Field(() => Int)
-    authorId: number;
-
-    @Field()
-    title: string;
-
-    @Field()
-    content: string;
-
-    @Field(() => String, { nullable: true })
-    category: string;
-
-    @Field(() => [String], { nullable: true })
-    tags: string[];
-}
-
-@InputType()
-export class EditArticleInput {
-    @Field(() => String, { nullable: true })
-    title?: string;
-
-    @Field(() => String, { nullable: true })
-    content?: string;
-
-    @Field(() => String, { nullable: true })
-    category?: string;
-
-    @Field(() => [String], { nullable: true })
-    tags?: string[];
-}
-
-@ObjectType()
-export class ArticleResponse {
-    @Field(() => Error, { nullable: true })
-    error?: Error;
-
-    @Field(() => Article, { nullable: true })
-    article?: Article;
-}
+import { EditArticleInput, ArticleInput, ArticleResponse } from './articleTypes';
+import { Comment } from '../../entities/Comment';
+import { CommentInput } from './commentTypes';
 
 @Resolver()
 export class ArticleResolver {
@@ -54,7 +14,8 @@ export class ArticleResolver {
         @Arg('id', { nullable: true }) id?: number
     ) {
         const articles = prisma.article.findMany({
-            where: { id }
+            where: { id },
+            include: { comments: true, author: true }
         });
 
         return articles;
@@ -109,4 +70,47 @@ export class ArticleResolver {
 
         return true;
     }
+
+    @Mutation(() => Comment)
+    async postComment(
+        @Ctx() { prisma }: Context,
+        @Arg('articleId') id: number,
+        @Arg('options') options: CommentInput
+    ) {
+        try {
+            const comment = await prisma.comment.create({
+                data: {
+                    fromId: 1, // userid
+                    articleId: id,
+                    ...options
+                }
+            });
+
+            await prisma.article.findUnique({
+                where: { id },
+                include: {
+                    comments: true
+                }
+            });
+
+            return comment;
+        } catch (error) {
+            console.error(error);
+            return useUnknownError();
+        }
+
+    }
 }
+
+// Todo:
+/*
+comment.fromId and comment.from should be required
+article.update has comments field but article.findUnique does not?
+
+            const article = await prisma.article.findUnique({
+                where: { id },
+                include: {
+                    comments: true
+                }
+            });
+*/
